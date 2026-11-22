@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+"""todo : CLI de todo-hub.
+  todo add "texte" [-p PROJET] [--prio basse|normale|haute|urgente]   note « à faire plus tard » (projet = dossier courant par défaut)
+           [--due DATE [--at HH:MM]] [--check "commande"]
+  todo list [-p PROJET]          liste les tâches ouvertes
+  todo cal                       tâches datées, par échéance
+  todo due ID|texte DATE|aucune [--at HH:MM] [--check "commande"|--check ""]
+  todo check ID|texte            lance la vérif auto maintenant
+  todo run-checks                lance les vérifs arrivées à échéance (timer todo-checks, chaque minute)
+DATE : aujourdhui, demain, apres-demain, +3 (jours), lundi…dimanche (le prochain), 28/10, 28/10/2026, 2026-10-28.
+Vérif auto : commande lancée sur le serveur à l'échéance (09:00 si pas d'heure). Code 0 = OK, la tâche est cochée ;
+code 75 = pas encore, nouvel essai 30 min plus tard ; autre code = échec, la tâche passe en priorité haute.
+  todo done|doing|reopen|drop ID|texte
+  todo prio basse|normale|haute|urgente ID|texte
+  todo move ID|texte -p PROJET
+  todo project create|rename|merge|close|reopen|link NOM [CIBLE|DOSSIER]
+"""
+import argparse, json, os, subprocess, sys, unicodedata, urllib.request
+from datetime import date, datetime, timedelta
+
+URL = "http://127.0.0.1:8765"
+
+
+def call(path, body=None):
+    req = urllib.request.Request(URL + path, json.dumps(body).encode() if body is not None else None,
+                                 {"Content-Type": "application/json"})
+    try:
+        return json.load(urllib.request.urlopen(req, timeout=5))
+    except urllib.error.HTTPError as e:
+        sys.exit("erreur : " + json.load(e).get("error", str(e)))
+    except OSError:
+        sys.exit("todo-hub injoignable (systemctl --user status todo-hub)")
+
+
+DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+CHECK_TIMEOUT = 300
+
+
+def parse_due(txt, at=None):
+    """Date en français -> 'AAAA-MM-JJ' (ou 'AAAA-MM-JJTHH:MM' avec --at) ; '' pour « aucune »."""
+    t = unicodedata.normalize("NFD", txt.strip().lower()).encode("ascii", "ignore").decode().replace("'", "")
+    today = date.today()
+    if t in ("aucune", "non", "-", ""):
+        return ""
+    if t in ("aujourdhui", "auj"):
+        d = today
+    elif t == "demain":
+        d = today + timedelta(1)
+    elif t in ("apres-demain", "apresdemain"):
+        d = today + timedelta(2)
+    elif t.lstrip("+").rstrip("j").isdigit() and t.startswith("+"):
+        d = today + timedelta(int(t[1:].rstrip("j")))
+    elif t in DAYS:
+        d = today + timedelta((DAYS.index(t) - today.weekday() - 1) % 7 + 1)
+    else:
+        d = None
+        short = t.count("/") == 1      # 28/10 sans année : la prochaine occurrence
+        for fmt in ("%Y-%m-%d", "%d/%m/%Y"):
+            try:
+                d = datetime.strptime(f"{t}/{today.year}" if short else t, fmt).date()
+                if short and d < today:
+                    d = d.replace(year=today.year + 1)
+                break
+            except ValueError:
+                pass
+        if d is None:
+            sys.exit(f"date incomprise : « {txt} » (demain, lundi, +3, 28/10, 2026-10-28…)")
+    if not at:
+        return d.isoformat()
+    h, _, m = at.lower().replace("h", ":").partition(":")      # 9, 9h, 9h30, 09:00
+    if not (h.isdigit() and (m or "0").isdigit() and int(h) < 24 and int(m or 0) < 60):
+        sys.exit(f"heure incomprise : « {at} » (9:00, 14h30…)")
+    return f"{d.isoformat()}T{int(h):02d}:{int(m or 0):02d}"
+
+
+def jx(due):
+    """J-3, auj., J+2 (en retard)."""
+    n = (date.fromisoformat(due[:10]) - date.today()).days
+    when = "auj." if n == 0 else f"J{'-' if n > 0 else '+'}{abs(n)}"
+    return when + (f" {due[11:]}" if "T" in due else "")
+
+
+def run_check(t):
+    """Lance la commande d'une vérif auto et envoie le résultat au hub."""
+    try:
+        r = subprocess.run(["bash", "-c", t["check_cmd"]], capture_output=True, text=True, timeout=CHECK_TIMEOUT,
+                           env={**os.environ, "PATH": os.path.expanduser("~/.local/bin:") + os.environ.get("PATH", "")})
+        code, out = r.returncode, (r.stdout + r.stderr).strip()
+    except subprocess.TimeoutExpired:
+        code, out = 124, f"délai dépassé ({CHECK_TIMEOUT} s)"
+    call(f"/api/task/{t['id']}/check", {"code": code, "out": out})
+    return code, out
+
+
+ap = argparse.ArgumentParser(prog="todo")
+sub = ap.add_subparsers(dest="cmd", required=True)
+PRIO = {"basse": 1, "normale": 2, "haute": 3, "urgente": 4}
+a = sub.add_parser("add"); a.add_argument("title", nargs="+"); a.add_argument("--prio", choices=PRIO, default="normale"); a.add_argument("-p", "--project")
+for x in (a, d := sub.add_parser("due")):
+    x.add_argument("--at", help="heure, ex. 9:00"); x.add_argument("--check", help="commande de vérif auto")
+a.add_argument("--due")
+d.add_argument("ref", nargs="+", help="ID ou morceau du titre, puis la date")
+sub.add_parser("cal"); sub.add_parser("run-checks")
+ck = sub.add_parser("check"); ck.add_argument("ref", nargs="+")
+l = sub.add_parser("list"); l.add_argument("-p", "--project")
+for n, s in (("done", "done"), ("doing", "doing"), ("reopen", "todo"), ("drop", "dropped")):
+    x = sub.add_parser(n); x.add_argument("ref", nargs="+", help="ID ou morceau du titre"); x.set_defaults(status=s)
+pr = sub.add_parser("prio"); pr.add_argument("level", choices=PRIO); pr.add_argument("ref", nargs="+")
+mv = sub.add_parser("move"); mv.add_argument("ref", nargs="+"); mv.add_argument("-p", "--project", required=True)
+pj = sub.add_parser("project"); pj.add_argument("op"); pj.add_argument("name"); pj.add_argument("arg", nargs="?")
+args = ap.parse_args()
+
+if args.cmd == "add" and (args.at or args.check) and not args.due:
+    sys.exit("--at et --check demandent --due")
+if args.cmd == "add":
+    due = parse_due(args.due, args.at) if args.due else None
+    for title in args.title:
+        r = call("/api/task", {"project": args.project, "title": title, "cwd": os.getcwd(), "priority": PRIO[args.prio],
+                               "due": due, "check": args.check})
+        print(f"noté (#{r['id']}) {title}" + (f"  [{jx(due)}]" if due else "") + ("  vérif auto" if args.check else ""))
+elif args.cmd == "list":
+    mark = {"todo": "[ ]", "doing": "[~]", "done": "[x]"}
+    for p in call("/api/state")["projects"]:
+        if p["closed"]:
+            continue
+        if args.project and args.project.lower() not in p["name"].lower():
+            continue
+        print(f"{p['name']}  {p['percent']}%  ({p['done']}/{p['total']})")
+        for t in p["tasks"]:
+            if t["status"] != "done":
+                due = f"  [{jx(t['due'])}]" if t.get("due") else ""
+                ck = {"wait": "  ⏱ auto", "ko": "  ✗ vérif échouée"}.get(t.get("check_state"), "")
+                print(f"  {mark[t['status']]} #{t['id']} {'!' * max(0, t['priority'] - 2)}{t['title']}{due}{ck}")
+elif args.cmd == "cal":
+    ts = sorted(((t, p["name"]) for p in call("/api/state")["projects"] for t in p["tasks"]
+                 if t.get("due") and t["status"] != "done"), key=lambda x: x[0]["due"])
+    if not ts:
+        print("aucune tâche datée")
+    for t, pname in ts:
+        ck = {"wait": "⏱ auto", "ko": "✗ vérif échouée"}.get(t.get("check_state"), "")
+        print(f"{jx(t['due']):>11}  {t['due'][:10]}  #{t['id']} {t['title']}  ({pname}) {ck}")
+elif args.cmd == "run-checks":
+    for t in call("/api/checks/due"):
+        code, out = run_check(t)
+        print(f"#{t['id']} code {code} : {out.splitlines()[-1] if out else ''}")
+elif args.cmd == "project":
+    call("/api/project", {"op": args.op, "name": args.name, "arg": args.arg}); print("ok")
+else:
+    if args.cmd == "due":
+        if len(args.ref) < 2:
+            sys.exit("todo due ID|texte DATE")
+        *args.ref, when = args.ref
+    ref = " ".join(args.ref)
+    tid = int(ref) if ref.isdigit() else None
+    projects = call("/api/state")["projects"]
+    if tid is None:     # recherche par texte parmi les tâches ouvertes
+        hits = [t for p in projects for t in p["tasks"]
+                if ref.lower() in t["title"].lower() and t["status"] != "done"]
+        if len(hits) != 1:
+            sys.exit(f"{len(hits)} tâches correspondent à « {ref} »" + "".join(f"\n  #{t['id']} {t['title']}" for t in hits))
+        tid = hits[0]["id"]
+    if args.cmd == "due":
+        due = parse_due(when, args.at)
+        call(f"/api/task/{tid}", {"due": due, "check": args.check})
+        print(f"#{tid} " + (f"échéance {due} [{jx(due)}]" if due else "sans échéance"))
+    elif args.cmd == "check":
+        t = next((t for p in projects for t in p["tasks"] if t["id"] == tid), None)
+        if not t or not t.get("check_cmd"):
+            sys.exit(f"#{tid} n'a pas de vérif auto")
+        code, out = run_check(t)
+        print({0: "OK, tâche cochée", 75: "pas encore, nouvel essai dans 30 min"}.get(code, f"échec (code {code})"))
+        if out:
+            print(out)
+    elif args.cmd == "prio":
+        call(f"/api/task/{tid}", {"priority": PRIO[args.level]}); print(f"#{tid} priorité {args.level}")
+    elif args.cmd == "move":
+        dest = [p for p in projects if args.project.lower() in p["name"].lower()]
+        if len(dest) != 1:
+            sys.exit(f"projet « {args.project} » introuvable ou ambigu (les projets vides ne comptent pas : todo project create)")
+        call(f"/api/task/{tid}/move", {"project_id": dest[0]["id"]}); print(f"#{tid} -> {dest[0]['name']}")
+    else:
+        call(f"/api/task/{tid}", {"status": args.status}); print(f"ok #{tid}")

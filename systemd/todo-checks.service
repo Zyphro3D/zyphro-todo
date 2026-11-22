@@ -1,0 +1,10 @@
+[Unit]
+Description=todo-hub : vérifs auto arrivées à échéance (todo run-checks)
+After=todo-hub.service
+
+[Service]
+Type=oneshot
+# Pas de sandbox ici : les vérifs ont besoin de ssh, des scripts locaux, etc.
+# Le hub reste confiné et n'exécute jamais rien lui-même.
+ExecStart=%h/dev/zyphro-todo/bin/todo run-checks
+TimeoutStartSec=30min

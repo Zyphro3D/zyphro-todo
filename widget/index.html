@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<style>
+:root{--bg:#14161a;--card:#1d2026;--line:#2a2e36;--fg:#e6e8eb;--mut:#8b919b;--acc:#4f9dff;--ok:#3fb27f;--warn:#e8a33d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.4 "Segoe UI",system-ui,sans-serif;
+  display:flex;flex-direction:column;height:100vh;overflow:hidden;border:1px solid var(--line)}
+header{display:flex;align-items:center;gap:8px;padding:8px 10px;-webkit-app-region:drag;border-bottom:1px solid var(--line)}
+header b{font-size:13px;white-space:nowrap}
+header .sub{white-space:nowrap}
+#q{-webkit-app-region:no-drag;flex:1;min-width:60px;padding:3px 8px}
+#dot{width:8px;height:8px;border-radius:50%;background:var(--warn)}
+#dot.on{background:var(--ok)}
+button{-webkit-app-region:no-drag;background:none;border:0;color:var(--mut);cursor:pointer;font-size:15px;padding:0 4px}
+button:hover{color:var(--fg)}
+main{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px;display:flex;flex-direction:column;gap:8px}
+.card{background:var(--card);border-radius:8px;padding:8px 10px}
+.head{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.head .n{flex:1;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.head .p{color:var(--mut);font-variant-numeric:tabular-nums}
+.live{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 6px var(--acc)}
+.bar{height:5px;background:var(--line);border-radius:3px;margin:6px 0 2px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc);transition:width .4s}
+.bar.full i{background:var(--ok)}
+.sub{color:var(--mut);font-size:11px}
+ul{list-style:none;margin:6px 0 0;padding:0}
+li{display:flex;gap:7px;align-items:flex-start;padding:3px 0;cursor:pointer}
+li .b{flex:none;width:14px;height:14px;margin-top:2px;border:1.5px solid var(--mut);border-radius:4px;display:grid;place-items:center;font-size:10px;color:#fff}
+li.done{color:var(--mut);text-decoration:line-through}
+li.done .b{background:var(--ok);border-color:var(--ok)}
+li.doing .b{border-color:var(--acc);background:radial-gradient(var(--acc) 35%,transparent 40%)}
+li.doing span{color:var(--fg);font-weight:600}
+li.note>span:first-of-type::after{content:" ✎";color:var(--mut);font-size:11px}
+form{margin-top:4px}
+input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;color:var(--fg);padding:4px 7px;font:inherit}
+input:focus{outline:1px solid var(--acc)}
+.empty{color:var(--mut);text-align:center;margin-top:30px}
+
+footer{padding:6px 8px;border-top:1px solid var(--line)}
+.card[draggable=true]{cursor:grab}
+.over{outline:2px dashed var(--acc);outline-offset:-2px}
+.overt{box-shadow:inset 0 2px 0 var(--acc)}
+.x{opacity:0;font-size:12px;padding:0 2px}
+li:hover .x{opacity:1}
+li.doing.stale .b{filter:grayscale(1);opacity:.6}
+.live.stale{background:var(--mut);box-shadow:none}
+.head input{flex:1}
+.chev{font-size:12px;width:16px;padding:0;color:var(--mut)}
+#bar{display:flex;align-items:center;gap:6px;padding:4px 10px;border-bottom:1px solid var(--line)}
+#sby{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:2px 4px;font:inherit}
+#sdir{border:1px solid var(--line);border-radius:6px;color:var(--fg);padding:0 8px;font-size:13px}
+#sdir:disabled{opacity:.3;cursor:default}
+.pr{font-size:12px;padding:0 2px;line-height:1.4}
+li>span{flex:1;min-width:0;overflow-wrap:anywhere}
+.pr.p2{opacity:0}li:hover .pr.p2{opacity:.35}
+.pr.p1{color:var(--mut)}.pr.p3{color:var(--warn)}.pr.p4{color:#ff5d5d}
+.pr+.x{margin-left:0}
+li.done .pr{display:none}
+#shd,#shc{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:1px 8px}
+#shd{margin-left:auto}
+#shd.on,#shc.on{color:var(--ok);border-color:var(--ok)}
+.fin{font-size:13px;padding:0 3px}
+.fin.ok{color:var(--ok);font-weight:700}
+.card.closed{opacity:.55}
+.due{flex:none;font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-top:1px;cursor:pointer;font-variant-numeric:tabular-nums}
+.due.today{color:var(--warn);border-color:var(--warn)}
+.due.late{color:#ff5d5d;border-color:#ff5d5d}
+li.late{box-shadow:inset 2px 0 0 #ff5d5d;padding-left:5px}
+li.done .due,li.done .ck.wait{display:none}
+.ck{flex:none;font-size:11px;margin-top:1px;cursor:default}
+.ck.wait{color:var(--mut)}.ck.ok{color:var(--ok)}.ck.ko{color:#ff5d5d;font-weight:700;cursor:pointer}
+li input[type=date]{width:auto;flex:none;padding:0 4px;color-scheme:dark}
+#cal{font-size:13px;border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+#cal.on{color:var(--acc);border-color:var(--acc)}
+#cal .n{font-size:11px;margin-left:3px}#cal .n.late{color:#ff5d5d}#cal .n.today{color:var(--warn)}
+.day{font-weight:600;margin:4px 0 0;display:flex;gap:6px;align-items:baseline}
+.day .sub{font-weight:400}
+.day.late{color:#ff5d5d}.day.today{color:var(--warn)}
+li .pj{flex:none;max-width:35%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--mut);font-size:11px;margin-top:1px}
+</style></head><body>
+<header><i id="dot"></i><b>Todo Claude</b><input id="q" type="search" placeholder="Chercher…" maxlength="60"><span class="sub" id="sum"></span><button id="all" title="Tout réduire / tout déplier">⇕</button><button id="x" title="Masquer">–</button></header>
+<div id="bar"><span class="sub">Tri</span><select id="sby"><option value="manual">Manuel</option><option value="prio">Importance</option><option value="created">Création</option><option value="due">Échéance</option></select><button id="sdir" title="">↓</button><button id="shd">✓ Faites</button><button id="shc">✔ Terminés</button><button id="cal" title="Calendrier : tâches datées">📅</button></div>
+<main id="m"><div class="empty">Connexion au serveur…</div></main>
+<footer><form id="np"><input placeholder="+ nouveau projet" maxlength="60"></form></footer>
+<script src="renderer.js"></script></body></html>

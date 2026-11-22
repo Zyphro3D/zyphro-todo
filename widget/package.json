@@ -1,0 +1,7 @@
+{
+  "name": "zyphro-todo-widget",
+  "version": "0.2.1",
+  "description": "Widget Windows de todo-hub (Claude Code)",
+  "main": "main.js",
+  "private": true
+}
