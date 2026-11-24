@@ -1,0 +1,19 @@
+[Unit]
+Description=todo-hub : liste de tâches centrale alimentée par Claude Code (127.0.0.1:8765)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -u %h/dev/zyphro-todo/hub/hub.py
+Restart=always
+RestartSec=3
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=%h/.local/share/todo-hub
+RestrictAddressFamilies=AF_INET AF_UNIX
+LockPersonality=yes
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target

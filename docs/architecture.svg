@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="t d">
+<title id="t">Architecture de zyphro-todo</title>
+<desc id="d">Sur le serveur, Claude Code, la CLI todo et le timer appellent le hub en HTTP local ; le hub stocke dans SQLite ; le widget Windows s'y connecte par un tunnel SSH et reçoit les changements en direct.</desc>
+<defs>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9c9ca3"/></marker>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#e8434d"/></marker>
+<pattern id="weave" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#0b0b0c"/><rect width="3" height="6" fill="#0e0e10"/></pattern>
+</defs>
+<rect width="1200" height="560" rx="12" fill="url(#weave)"/>
+<rect x="32" y="56" width="790" height="440" rx="8" fill="#ffffff" fill-opacity="0.015" stroke="#8f8f97" stroke-opacity="0.6" stroke-dasharray="4,4"/>
+<text x="46" y="78" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="500" fill="#8f8f97" text-anchor="start" letter-spacing="0.08em">SERVEUR LINUX</text>
+<rect x="886" y="56" width="282" height="440" rx="8" fill="#ffffff" fill-opacity="0.015" stroke="#8f8f97" stroke-opacity="0.6" stroke-dasharray="4,4"/>
+<text x="900" y="78" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="500" fill="#8f8f97" text-anchor="start" letter-spacing="0.08em">PC WINDOWS</text>
+<path d="M300 140 H372 Q380 140 380 148 V216 Q380 224 388 224 H466" fill="none" stroke="#9c9ca3" stroke-width="1.2" marker-end="url(#a)"/>
+<path d="M300 256 H466" fill="none" stroke="#9c9ca3" stroke-width="1.2" marker-end="url(#a)"/>
+<path d="M300 372 H372 Q380 372 380 364 V296 Q380 288 388 288 H466" fill="none" stroke="#9c9ca3" stroke-width="1.2" marker-end="url(#a)"/>
+<path d="M600 304 V366" fill="none" stroke="#9c9ca3" stroke-width="1.2" marker-end="url(#a)"/>
+<path d="M916 256 H718" fill="none" stroke="#e8434d" stroke-width="1.6" marker-end="url(#ar)"/>
+<path d="M718 232 H916" fill="none" stroke="#9c9ca3" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#a)"/>
+<rect x="323.8" y="122" width="32.4" height="14" rx="3" fill="#0b0b0c"/>
+<text x="340" y="132" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="500" fill="#9c9ca3" text-anchor="middle" letter-spacing="0.06em">HOOK</text>
+<rect x="352.8" y="240" width="60.4" height="14" rx="3" fill="#0b0b0c"/>
+<text x="383" y="250" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="500" fill="#9c9ca3" text-anchor="middle" letter-spacing="0.06em">HTTP:8765</text>
+<rect x="307.0" y="354" width="66.0" height="14" rx="3" fill="#0b0b0c"/>
+<text x="340" y="364" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="500" fill="#9c9ca3" text-anchor="middle" letter-spacing="0.06em">CHAQUE MIN</text>
+<rect x="775.6" y="214" width="82.8" height="14" rx="3" fill="#0b0b0c"/>
+<text x="817" y="224" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="500" fill="#9c9ca3" text-anchor="middle" letter-spacing="0.06em">SSE : CHANGED</text>
+<rect x="767.2" y="262" width="99.6" height="14" rx="3" fill="#0b0b0c"/>
+<text x="817" y="272" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="500" fill="#e8434d" text-anchor="middle" letter-spacing="0.06em">SSH:22  -L 18765</text>
+<rect x="80" y="104" width="220" height="72" rx="6" fill="#1c1c1f" stroke="#3a3a40" stroke-width="1"/>
+<text x="94" y="124" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9" font-weight="500" fill="#d4b06a" text-anchor="start" letter-spacing="0.08em">SESSION</text>
+<text x="94" y="144" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#f1f1f2" text-anchor="start">Claude Code</text>
+<text x="94" y="162" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#9c9ca3" text-anchor="start">PostToolUse · TodoWrite</text>
+<rect x="80" y="220" width="220" height="72" rx="6" fill="#1c1c1f" stroke="#3a3a40" stroke-width="1"/>
+<text x="94" y="240" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9" font-weight="500" fill="#d4b06a" text-anchor="start" letter-spacing="0.08em">CLI</text>
+<text x="94" y="260" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#f1f1f2" text-anchor="start">todo</text>
+<text x="94" y="278" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#9c9ca3" text-anchor="start">add · done · due · check</text>
+<rect x="80" y="336" width="220" height="72" rx="6" fill="#1c1c1f" stroke="#3a3a40" stroke-width="1"/>
+<text x="94" y="356" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9" font-weight="500" fill="#d4b06a" text-anchor="start" letter-spacing="0.08em">VÉRIFS AUTO</text>
+<text x="94" y="376" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#f1f1f2" text-anchor="start">todo-checks</text>
+<text x="94" y="394" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#9c9ca3" text-anchor="start">timer systemd</text>
+<rect x="470" y="200" width="248" height="104" rx="6" fill="#1c1c1f" stroke="#d4b06a" stroke-width="1.4"/>
+<text x="484" y="220" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9" font-weight="500" fill="#d4b06a" text-anchor="start" letter-spacing="0.08em">SERVICE</text>
+<text x="484" y="240" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#f1f1f2" text-anchor="start">hub</text>
+<text x="484" y="258" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#9c9ca3" text-anchor="start">127.0.0.1:8765</text>
+<text x="484" y="273" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#9c9ca3" text-anchor="start">Python stdlib · confiné</text>
+<rect x="500" y="370" width="200" height="64" rx="6" fill="#141416" stroke="#3a3a40" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="514" y="390" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9" font-weight="500" fill="#d4b06a" text-anchor="start" letter-spacing="0.08em">STOCKAGE</text>
+<text x="514" y="410" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#f1f1f2" text-anchor="start">todo.db</text>
+<text x="514" y="428" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#9c9ca3" text-anchor="start">SQLite</text>
+<rect x="916" y="200" width="220" height="104" rx="6" fill="#1c1c1f" stroke="#3a3a40" stroke-width="1"/>
+<text x="930" y="220" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9" font-weight="500" fill="#d4b06a" text-anchor="start" letter-spacing="0.08em">TODO CLAUDE</text>
+<text x="930" y="240" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#f1f1f2" text-anchor="start">Widget</text>
+<text x="930" y="258" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#9c9ca3" text-anchor="start">Electron · zone de notif.</text>
+<text x="930" y="273" font-family="ui-monospace, 'SF Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#9c9ca3" text-anchor="start">relance le tunnel seul</text>
+<path d="M48 528 H84" stroke="#9c9ca3" stroke-width="1.2" marker-end="url(#a)"/><text x="94" y="532" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="400" fill="#9c9ca3" text-anchor="start">appel HTTP local, jamais exposé au réseau</text>
+<path d="M440 528 H476" stroke="#e8434d" stroke-width="1.6" marker-end="url(#ar)"/><text x="486" y="532" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="400" fill="#9c9ca3" text-anchor="start">seul passage réseau : tunnel SSH ouvert par le widget</text>
+<path d="M880 528 H916" stroke="#9c9ca3" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#a)"/><text x="926" y="532" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="400" fill="#9c9ca3" text-anchor="start">flux poussé en direct</text>
+</svg>
